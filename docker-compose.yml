@@ -1,0 +1,31 @@
+services:
+  owntone:
+    image: docker.io/owntone/owntone:latest
+    container_name: owntone
+    network_mode: host
+    environment:
+      - UID=1000
+      - GID=1000
+    volumes:
+      - ./config/owntone:/etc/owntone
+      - ./cache/owntone:/var/cache/owntone
+      - ./music:/srv/media
+      - ./spotify-pipe:/srv/spotify-pipe
+    depends_on:
+      - librespot
+    restart: unless-stopped
+
+  librespot:
+    image: giof71/librespot:latest
+    container_name: librespot
+    network_mode: host
+    environment:
+      - BACKEND=pipe
+      - DEVICE=/mnt/pipe/spotify.pcm
+      - BITRATE=320
+      - INITIAL_VOLUME=100
+      - DEVICE_NAME=OwnTone Spotify
+      - DEVICE_TYPE=speaker
+    volumes:
+      - ./spotify-pipe:/mnt/pipe
+    restart: unless-stopped
