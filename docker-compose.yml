@@ -26,7 +26,7 @@ services:
       - INITIAL_VOLUME=100
       - DEVICE_NAME=OwnTone Spotify
       - DEVICE_TYPE=speaker
-      - ONEVENT_COMMAND=/spotify-metadata.sh
+      - ONEVENT_COMMAND=spotify-metadata.sh
     volumes:
       - ./pipes:/mnt/pipe
       - ./scripts/spotify-metadata.sh:/userscripts/spotify-metadata.sh
