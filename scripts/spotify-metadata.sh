@@ -3,7 +3,7 @@
 # =========================
 # Configuration
 # =========================
-FIFO="/srv/pipes/spotify.metadata"
+FIFO="/mnt/pipe/spotify.metadata"
 ART_CACHE="/tmp/spotify_current_art.jpg"
 LOG_TAG="spotify-metadata"
 

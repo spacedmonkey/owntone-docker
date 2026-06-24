@@ -21,13 +21,13 @@ services:
     network_mode: host
     environment:
       - BACKEND=pipe
-      - DEVICE=/mnt/pipe/spotify.pcm
+      - DEVICE=/mnt/pipe/spotify
       - BITRATE=320
       - INITIAL_VOLUME=100
       - DEVICE_NAME=OwnTone Spotify
       - DEVICE_TYPE=speaker
-      - ONEVENT_COMMAND=/usr/local/bin/spotify-metadata.sh
+      - ONEVENT_COMMAND=/spotify-metadata.sh
     volumes:
       - ./pipes:/mnt/pipe
-      - ./scripts/spotify-metadata.sh:/usr/local/bin/spotify-metadata.sh
+      - ./scripts/spotify-metadata.sh:/userscripts/spotify-metadata.sh
     restart: unless-stopped
