@@ -10,7 +10,7 @@ services:
       - ./config/owntone:/etc/owntone
       - ./cache/owntone:/var/cache/owntone
       - ./music:/srv/media
-      - ./spotify-pipe:/srv/spotify-pipe
+      - ./pipes:/srv/pipes
     depends_on:
       - librespot
     restart: unless-stopped
@@ -26,6 +26,8 @@ services:
       - INITIAL_VOLUME=100
       - DEVICE_NAME=OwnTone Spotify
       - DEVICE_TYPE=speaker
+      - ONEVENT_COMMAND=/usr/local/bin/spotify-metadata.sh
     volumes:
-      - ./spotify-pipe:/mnt/pipe
+      - ./pipes:/mnt/pipe
+      - ./scripts/spotify-metadata.sh:/usr/local/bin/spotify-metadata.sh
     restart: unless-stopped

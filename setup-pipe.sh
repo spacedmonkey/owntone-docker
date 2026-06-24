@@ -6,8 +6,9 @@ set -euo pipefail
 # Run this once before starting the containers.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PIPE_DIR="${SCRIPT_DIR}/spotify-pipe"
-PIPE_PATH="${PIPE_DIR}/spotify.pcm"
+PIPE_DIR="${SCRIPT_DIR}/pipes"
+PIPE_PATH="${PIPE_DIR}/spotify"
+PIPE_METADATA_PATH="${PIPE_DIR}/spotify.metadata"
 
 OS="$(uname -s)"
 case "${OS}" in
@@ -38,5 +39,20 @@ else
   mkfifo "${PIPE_PATH}"
   echo "Created named pipe: ${PIPE_PATH}"
 fi
+
+# Create the named pipe
+if [ -p "${PIPE_METADATA_PATH}" ]; then
+  echo "Pipe already exists: ${PIPE_METADATA_PATH}"
+else
+  # Remove any regular file that might be in the way
+  if [ -e "${PIPE_METADATA_PATH}" ]; then
+    echo "Removing existing non-pipe file at: ${PIPE_METADATA_PATH}"
+    rm "${PIPE_METADATA_PATH}"
+  fi
+  mkfifo "${PIPE_METADATA_PATH}"
+  echo "Created named pipe: ${PIPE_METADATA_PATH}"
+fi
+
+chmod +x ./scripts/spotify-metadata.sh
 
 echo "Done. You can now run: docker compose up -d"
