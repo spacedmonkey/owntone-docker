@@ -32,7 +32,7 @@ services:
       - ./scripts/spotify-metadata.sh:/userscripts/spotify-metadata.sh
     restart: unless-stopped
   shairport-sync:
-    image: mikebrady/shairport-sync:latest
+    image: mikebrady/shairport-sync:classic
     container_name: shairport-sync
     network_mode: host
     restart: unless-stopped
