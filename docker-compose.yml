@@ -31,3 +31,11 @@ services:
       - ./pipes:/mnt/pipe
       - ./scripts/spotify-metadata.sh:/userscripts/spotify-metadata.sh
     restart: unless-stopped
+  shairport-sync:
+    image: mikebrady/shairport-sync:latest
+    container_name: shairport-sync
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./pipes:/data
+      - ./config/shairport/shairport-sync.conf:/etc/shairport-sync.conf:ro
