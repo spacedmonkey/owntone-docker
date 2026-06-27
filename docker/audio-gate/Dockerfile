@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install ffmpeg, sox, and bash
-RUN apk add --no-cache ffmpeg sox bash
+RUN apk add --no-cache ffmpeg sox bash alsa-utils
 
 # Create a directory for the named pipe
 RUN mkdir -p /srv/pipes
