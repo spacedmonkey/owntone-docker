@@ -46,9 +46,12 @@ services:
       dockerfile: Dockerfile
     container_name: audio-to-fifo
     restart: always
+    cap_add:
+      - SYS_NICE
     # Passes the ALSA hardware directly into the container
     devices:
-      - /dev/snd:/dev/snd
+      - /dev/snd/pcmC1D0c:/dev/snd/pcmC1D0c
+      - /dev/snd/controlC1:/dev/snd/controlC1
     ulimits:
       nice: -5
     # Maps the FIFO pipe directory to the host machine
