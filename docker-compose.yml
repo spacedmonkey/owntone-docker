@@ -45,7 +45,7 @@ services:
       context: ./docker/audio-gate
       dockerfile: Dockerfile
     container_name: audio-to-fifo
-    restart: unless-stopped
+    restart: always
     # Passes the ALSA hardware directly into the container
     devices:
       - /dev/snd:/dev/snd
