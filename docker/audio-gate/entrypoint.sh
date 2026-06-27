@@ -17,8 +17,8 @@ exec 3<> /srv/pipes/audio-input
   -i plughw:1,0 \
   -f s16le \
   -acodec pcm_s16le \
-  -ar 44100 \
+  -ar 48000 \
   - \
-| /usr/bin/sox -t raw -r 44100 -e signed -b 16 -c 1 - -t raw - \
+| /usr/bin/sox -t raw -r 48000 -e signed -b 16 -c 1 - -t raw - \
   silence 1 0.1 1% 1 10.0 1% \
 > /srv/pipes/audio-input
