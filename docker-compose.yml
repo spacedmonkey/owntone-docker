@@ -39,3 +39,19 @@ services:
     volumes:
       - ./pipes:/data
       - ./config/shairport/shairport-sync.conf:/etc/shairport-sync.conf:ro
+  audio-gate:
+    # Points to the specific subfolder containing the Dockerfile
+    build:
+      context: ./docker/audio-gate
+      dockerfile: Dockerfile
+    container_name: audio-to-fifo
+    restart: unless-stopped
+    # Passes the ALSA hardware directly into the container
+    devices:
+      - /dev/snd:/dev/snd
+    ulimits:
+      nice: -5
+    # Maps the FIFO pipe directory to the host machine
+    volumes:
+      - ./pipes:/srv/pipes
+    user: "0:0"
