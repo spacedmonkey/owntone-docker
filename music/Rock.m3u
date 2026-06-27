@@ -1,0 +1,10 @@
+#EXTM3U
+
+#EXTINF:-1,Radio X London
+https://icecast.thisisdax.com/RadioXUKMP3
+
+#EXTINF:-1,Kerrang! Radio
+http://edge-bauerall-01-gos2.sharp-stream.com/kerrang.mp3
+
+#EXTINF:-1,Magic Radio UK
+https://n28a-eu.rcs.revma.com:443/0kv9v43t87zuv
