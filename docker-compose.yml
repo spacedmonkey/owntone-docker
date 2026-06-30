@@ -24,7 +24,7 @@ services:
       - DEVICE=/mnt/pipe/spotify
       - BITRATE=320
       - INITIAL_VOLUME=100
-      - DEVICE_NAME=OwnTone Spotify
+      - DEVICE_NAME=Jukebox
       - DEVICE_TYPE=speaker
       - ONEVENT_COMMAND=spotify-metadata.sh
     volumes:
