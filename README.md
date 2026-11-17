@@ -30,11 +30,7 @@ docker compose build --no-cache airptpd
 
 ## Configuration
 
-Host paths, the Spotify receiver and the airptpd version are set with environment variables. Copy the example file and edit it:
-
-```sh
-cp .env.example .env
-```
+Host paths, the Spotify receiver and the airptpd version are set with environment variables in `.env`. `./setup.sh` creates it from `.env.example` if it doesn't exist (see [Usage](#usage)).
 
 | Variable     | Default    | Used for                                                                |
 |--------------|------------|-------------------------------------------------------------------------|
@@ -65,24 +61,27 @@ If you move `CONFIG_DIR`, copy the contents of `./config` there first.
 
 ## Usage
 
-1. Create the named pipes (reads `PIPES_DIR` from `.env`):
+1. Run the setup script:
 
    ```sh
-   ./setup-pipe.sh
+   ./setup.sh
    ```
 
-   This creates `spotify`, `spotify.metadata`, `airplay` and `airplay.metadata` FIFOs.
+   This copies `.env.example` to `.env` (an existing `.env` is never overwritten) and creates the `spotify`, `spotify.metadata`, `airplay` and `airplay.metadata` FIFOs in `PIPES_DIR`.
 
-2. Start the stack:
+2. Edit `.env` as needed. If you change `PIPES_DIR`, run `./setup.sh` again to create the pipes there.
+
+3. Start the stack:
 
    ```sh
    docker compose up -d --build
    ```
 
-3. Open the OwnTone web UI at `http://<host>:3689`.
+4. Open the OwnTone web UI at `http://<host>:3689`.
 
 ## Files
 
+- `setup.sh` – creates `.env` and the named pipes
 - `docker/airptpd/Dockerfile` – builds `airptpd` from libairptp source
 - `config/owntone/owntone.conf` – OwnTone config (library dirs `/srv/media` and `/srv/pipes`, pipe autostart)
 - `config/shairport/shairport-sync.conf` – shairport-sync pipe and metadata output

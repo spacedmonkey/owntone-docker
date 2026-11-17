@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Creates the named pipes (FIFOs) for multiple audio services.
+# Creates .env from .env.example (if missing) and the named pipes (FIFOs)
+# for multiple audio services.
 # Works on both Linux and macOS.
 # Run this once before starting the containers.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Create .env from the example, never overwriting an existing one
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+  echo ".env already exists, leaving it unchanged"
+else
+  cp "${SCRIPT_DIR}/.env.example" "${SCRIPT_DIR}/.env"
+  echo "Created .env from .env.example"
+fi
 
 # Use PIPES_DIR from the shell, then .env, defaulting to ./pipes (same
 # precedence as docker compose)
@@ -74,4 +83,4 @@ done
 echo "--------------------------------------"
 chmod +x "${SCRIPT_DIR}/scripts/spotify-metadata.sh" 2>/dev/null || echo "Note: ./scripts/spotify-metadata.sh not found, skipping chmod."
 
-echo "Done. You can now run: docker compose up -d"
+echo "Done. Review .env, then run: docker compose up -d --build"
