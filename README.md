@@ -7,7 +7,7 @@ Docker Compose setup for [OwnTone](https://owntone.github.io/owntone-server/) wi
 | Service          | Image                              | Purpose                                                      |
 |------------------|------------------------------------|--------------------------------------------------------------|
 | `airptpd`        | built from `docker/airptpd`        | PTP daemon from libairptp; provides the AirPlay 2 clock to OwnTone |
-| `owntone`        | `owntone/owntone:latest`           | Media server; plays the music library and the pipe inputs    |
+| `owntone`        | `owntone/owntone:${OWNTONE_TAG}`   | Media server; plays the music library and the pipe inputs    |
 | `librespot`      | `giof71/librespot:latest`          | Spotify Connect receiver (`Jukebox`), writes to the `spotify` pipe |
 | `shairport-sync` | `mikebrady/shairport-sync:classic` | AirPlay receiver, writes to the `airplay` pipe               |
 
@@ -42,6 +42,7 @@ Host paths, the Spotify receiver and the airptpd version are set with environmen
 | `SPOTIFY_DEVICE_TYPE` | `speaker` | Icon shown in the Spotify app (`speaker`, `avr`, `tv`, …)   |
 | `SPOTIFY_BITRATE` | `320`  | Spotify stream bitrate: `96`, `160` or `320`                          |
 | `SPOTIFY_INITIAL_VOLUME` | `100` | Initial Spotify volume, `0`–`100`                              |
+| `OWNTONE_TAG` | `latest` | `owntone/owntone` image tag, e.g. `staging` for the newest build      |
 | `LIBAIRPTP_REF` | `0.7`    | libairptp branch, tag or commit that airptpd is built from          |
 
 Every variable has a default, so the stack also runs without a `.env` file. Relative paths are resolved from the directory containing `docker-compose.yml`.

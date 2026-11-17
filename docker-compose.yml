@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
 
   owntone:
-    image: docker.io/owntone/owntone:latest
+    image: docker.io/owntone/owntone:${OWNTONE_TAG:-latest}
     container_name: owntone
     network_mode: host
     # Share the IPC namespace so OwnTone can read airptpd's shared memory
