@@ -1,18 +1,44 @@
 services:
+  airptpd:
+    build:
+      context: ./docker/airptpd
+      args:
+        LIBAIRPTP_REF: ${LIBAIRPTP_REF:-0.7}
+    container_name: airptpd
+    network_mode: host
+    ipc: shareable
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    # OwnTone only looks for the daemon at startup, so wait until it is up
+    healthcheck:
+      test: ["CMD", "test", "-e", "/dev/shm/airptp_shm"]
+      interval: 30s
+      start_period: 10s
+      start_interval: 1s
+    restart: unless-stopped
+
   owntone:
     image: docker.io/owntone/owntone:latest
     container_name: owntone
     network_mode: host
+    # Share the IPC namespace so OwnTone can read airptpd's shared memory
+    ipc: "service:airptpd"
     environment:
       - UID=1000
       - GID=1000
     volumes:
-      - ./config/owntone:/etc/owntone
-      - ./cache/owntone:/var/cache/owntone
-      - ./music:/srv/media
-      - ./pipes:/srv/pipes
+      - ${CONFIG_DIR:-./config}/owntone:/etc/owntone
+      - ${CACHE_DIR:-./cache}/owntone:/var/cache/owntone
+      - ${MUSIC_DIR:-./music}:/srv/media
+      - ${PIPES_DIR:-./pipes}:/srv/pipes
     depends_on:
-      - librespot
+      airptpd:
+        condition: service_healthy
+        restart: true
+      librespot:
+        condition: service_started
     restart: unless-stopped
 
   librespot:
@@ -22,39 +48,21 @@ services:
     environment:
       - BACKEND=pipe
       - DEVICE=/mnt/pipe/spotify
-      - BITRATE=320
-      - INITIAL_VOLUME=100
-      - DEVICE_NAME=Jukebox
-      - DEVICE_TYPE=speaker
+      - BITRATE=${SPOTIFY_BITRATE:-320}
+      - INITIAL_VOLUME=${SPOTIFY_INITIAL_VOLUME:-100}
+      - DEVICE_NAME=${SPOTIFY_DEVICE_NAME:-Jukebox}
+      - DEVICE_TYPE=${SPOTIFY_DEVICE_TYPE:-speaker}
       - ONEVENT_COMMAND=spotify-metadata.sh
     volumes:
-      - ./pipes:/mnt/pipe
+      - ${PIPES_DIR:-./pipes}:/mnt/pipe
       - ./scripts/spotify-metadata.sh:/userscripts/spotify-metadata.sh
     restart: unless-stopped
+
   shairport-sync:
     image: mikebrady/shairport-sync:classic
     container_name: shairport-sync
     network_mode: host
     restart: unless-stopped
     volumes:
-      - ./pipes:/data
-      - ./config/shairport/shairport-sync.conf:/etc/shairport-sync.conf:ro
-  audio-gate:
-    # Points to the specific subfolder containing the Dockerfile
-    build:
-      context: ./docker/audio-gate
-      dockerfile: Dockerfile
-    container_name: audio-to-fifo
-    restart: always
-    cap_add:
-      - SYS_NICE
-    # Passes the ALSA hardware directly into the container
-    devices:
-      - /dev/snd/pcmC1D0c:/dev/snd/pcmC1D0c
-      - /dev/snd/controlC1:/dev/snd/controlC1
-    ulimits:
-      nice: -5
-    # Maps the FIFO pipe directory to the host machine
-    volumes:
-      - ./pipes:/srv/pipes
-    user: "0:0"
+      - ${PIPES_DIR:-./pipes}:/data
+      - ${CONFIG_DIR:-./config}/shairport/shairport-sync.conf:/etc/shairport-sync.conf:ro

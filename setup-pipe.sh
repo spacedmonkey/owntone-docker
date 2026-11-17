@@ -6,10 +6,20 @@ set -euo pipefail
 # Run this once before starting the containers.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PIPE_DIR="${SCRIPT_DIR}/pipes"
+
+# Use PIPES_DIR from the shell, then .env, defaulting to ./pipes (same
+# precedence as docker compose)
+if [ -z "${PIPES_DIR:-}" ] && [ -f "${SCRIPT_DIR}/.env" ]; then
+  PIPES_DIR="$(sed -n 's/^PIPES_DIR=//p' "${SCRIPT_DIR}/.env" | tail -n 1)"
+fi
+PIPE_DIR="${PIPES_DIR:-./pipes}"
+case "${PIPE_DIR}" in
+  /*) ;;
+  *) PIPE_DIR="${SCRIPT_DIR}/${PIPE_DIR#./}" ;;
+esac
 
 # Define the array of audio services you want to create pipes for
-SERVICES=("spotify" "airplay" "audio-input")
+SERVICES=("spotify" "airplay")
 
 OS="$(uname -s)"
 case "${OS}" in
@@ -62,6 +72,6 @@ for SERVICE in "${SERVICES[@]}"; do
 done
 
 echo "--------------------------------------"
-chmod +x ./scripts/spotify-metadata.sh 2>/dev/null || echo "Note: ./scripts/spotify-metadata.sh not found, skipping chmod."
+chmod +x "${SCRIPT_DIR}/scripts/spotify-metadata.sh" 2>/dev/null || echo "Note: ./scripts/spotify-metadata.sh not found, skipping chmod."
 
 echo "Done. You can now run: docker compose up -d"
