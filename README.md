@@ -9,7 +9,7 @@ Docker Compose setup for [OwnTone](https://owntone.github.io/owntone-server/) wi
 | `airptpd`        | built from `docker/airptpd`        | PTP daemon from libairptp; provides the AirPlay 2 clock to OwnTone |
 | `owntone`        | `owntone/owntone:${OWNTONE_TAG}`   | Media server; plays the music library and the pipe inputs    |
 | `librespot`      | `giof71/librespot:latest`          | Spotify Connect receiver (`Jukebox`), writes to the `spotify` pipe |
-| `shairport-sync` | `mikebrady/shairport-sync:classic` | AirPlay receiver, writes to the `airplay` pipe               |
+| `shairport-sync` | built from `docker/shairport-sync` | AirPlay receiver, writes to the `airplay` pipe               |
 
 All services use `network_mode: host` so mDNS/Bonjour discovery works.
 
@@ -28,6 +28,14 @@ The image is built from source on first `docker compose up`. To build another li
 docker compose build --no-cache airptpd
 ```
 
+### shairport-sync
+
+The AirPlay receiver is shairport-sync in Classic (AirPlay 1) mode, built from source with one patch, `docker/shairport-sync/claim-play-lock-before-thread.patch`.
+
+Upstream starts each connection's thread before claiming the play lock for it. A client that connects and disconnects immediately can finish its thread, releasing the lock, before the lock is claimed, which leaves the lock held by a closed connection. OwnTone triggers this: it does a TCP connect test against every AirPlay receiver it discovers, including this one, before applying `exclude`. The receiver then either deadlocks (`allow_session_interruption = "yes"`) or refuses every connection as busy (`"no"`). The patch claims the lock before starting the thread.
+
+`allow_session_interruption` is set to `"no"` so a probe can never cut off a stream that is playing. A second sender gets "busy" until the current one disconnects or `session_timeout` (60 s) passes.
+
 ## Configuration
 
 Host paths, the Spotify receiver and the airptpd version are set with environment variables in `.env`. `./setup.sh` creates it from `.env.example` if it doesn't exist (see [Usage](#usage)).
@@ -43,6 +51,7 @@ Host paths, the Spotify receiver and the airptpd version are set with environmen
 | `SPOTIFY_BITRATE` | `320`  | Spotify stream bitrate: `96`, `160` or `320`                          |
 | `SPOTIFY_INITIAL_VOLUME` | `100` | Initial Spotify volume, `0`–`100`                              |
 | `OWNTONE_TAG` | `latest` | `owntone/owntone` image tag, e.g. `staging` for the newest build      |
+| `SHAIRPORT_SYNC_REF` | `5.6.3` | shairport-sync tag or commit the AirPlay receiver is built from       |
 | `LIBAIRPTP_REF` | `0.7`    | libairptp branch, tag or commit that airptpd is built from          |
 
 Every variable has a default, so the stack also runs without a `.env` file. Relative paths are resolved from the directory containing `docker-compose.yml`.
@@ -83,6 +92,7 @@ If you move `CONFIG_DIR`, copy the contents of `./config` there first.
 ## Files
 
 - `setup.sh` – creates `.env` and the named pipes
+- `docker/shairport-sync/` – builds the patched shairport-sync
 - `docker/airptpd/Dockerfile` – builds `airptpd` from libairptp source
 - `config/owntone/owntone.conf` – OwnTone config (library dirs `/srv/media` and `/srv/pipes`, pipe autostart)
 - `config/shairport/shairport-sync.conf` – shairport-sync pipe and metadata output

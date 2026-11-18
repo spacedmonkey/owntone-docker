@@ -1,0 +1,45 @@
+diff --git a/rtsp.c b/rtsp.c
+index 0c06b3a..8d42d3f 100644
+--- a/rtsp.c
++++ b/rtsp.c
+@@ -4717,19 +4717,12 @@ void *rtsp_listen_loop(__attribute((unused)) void *arg) {
+           debug(1, "Error figuring out Shairport Sync's own IP number.");
+         }
+ 
+-        ret = named_pthread_create(&conn->thread, NULL, rtsp_conversation_thread_func, conn,
+-                                   "rtsp_conn_%d",
+-                                   conn->connection_number); // also acts as a memory barrier
+-        if (ret) {
+-          char errorstring[1024];
+-          strerror_r(ret, (char *)errorstring, sizeof(errorstring));
+-          die("Connection %d: cannot create an RTSP conversation thread. Error %d: \"%s\".",
+-              conn->connection_number, ret, (char *)errorstring);
+-        }
+-
+ #ifndef CONFIG_AIRPLAY_2
+         // in Classic AirPlay, since we know (by getting here) that interruptions are allowed, grab
+-        // the principal conn
++        // the principal conn. Do this before the conversation thread starts: a client that
++        // connects and closes at once (e.g. a TCP reachability probe) can otherwise run the
++        // thread's cleanup, which releases the play lock, before the lock is taken here,
++        // leaving principal_conn pointing at a finished connection.
+         if (get_play_lock(conn, config.allow_session_interruption) ==
+             play_lock_acquired_without_breaking_in) {
+           // now, if this new session did not break in, then it's okay to reset the next UDP ports
+@@ -4738,6 +4731,16 @@ void *rtsp_listen_loop(__attribute((unused)) void *arg) {
+         }
+ #endif
+ 
++        ret = named_pthread_create(&conn->thread, NULL, rtsp_conversation_thread_func, conn,
++                                   "rtsp_conn_%d",
++                                   conn->connection_number); // also acts as a memory barrier
++        if (ret) {
++          char errorstring[1024];
++          strerror_r(ret, (char *)errorstring, sizeof(errorstring));
++          die("Connection %d: cannot create an RTSP conversation thread. Error %d: \"%s\".",
++              conn->connection_number, ret, (char *)errorstring);
++        }
++
+         debug(3, "Successfully created RTSP receiver thread %d.", conn->connection_number);
+         conn->running = 1; // this must happen before the thread is tracked
+         track_thread(conn);

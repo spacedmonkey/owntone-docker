@@ -59,7 +59,12 @@ services:
     restart: unless-stopped
 
   shairport-sync:
-    image: mikebrady/shairport-sync:classic
+    # Classic shairport-sync built with a fix for a play-lock race; see
+    # docker/shairport-sync/claim-play-lock-before-thread.patch
+    build:
+      context: ./docker/shairport-sync
+      args:
+        SHAIRPORT_SYNC_REF: ${SHAIRPORT_SYNC_REF:-5.6.3}
     container_name: shairport-sync
     network_mode: host
     restart: unless-stopped
